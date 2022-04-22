@@ -107,6 +107,87 @@ function SWEP:CanSecondaryAttack()
 	return false
 end
 
+function SWEP:VMIV()
+	local owent = self:GetOwner()
+
+	if not IsValid(self.OwnerViewModel) then
+		if IsValid(owent) and owent.GetViewModel then
+			self.OwnerViewModel = owent:GetViewModel()
+		end
+
+		return false
+	else
+		if not IsValid(owent) or not owent.GetViewModel then
+			self.OwnerViewModel = nil
+
+			return false
+		end
+
+		return self.OwnerViewModel
+	end
+end
+
+function SWEP:CleanParticles()
+	if not IsValid(self) then return end
+
+	if self.StopParticles then
+		self:StopParticles()
+	end
+
+	if self.StopParticleEmission then
+		self:StopParticleEmission()
+	end
+
+	if not self:VMIV() then return end
+	local vm = self.OwnerViewModel
+
+	if IsValid(vm) then
+		if vm.StopParticles then
+			vm:StopParticles()
+		end
+
+		if vm.StopParticleEmission then
+			vm:StopParticleEmission()
+		end
+	end
+end
+
+function SWEP:EjectionSmoke(ovrr)
+	local retVal = hook.Run("TFA_EjectionSmoke",self)
+	if retVal ~= nil then
+		return retVal
+	end
+	if TFA.GetEJSmokeEnabled() and (self:GetStatL("EjectionSmokeEnabled") or ovrr) then
+		local vm = self:IsFirstPerson() and self.OwnerViewModel or self
+
+		if IsValid(vm) then
+			local att = vm:LookupAttachment(self:GetStatL("ShellAttachment"))
+
+			if not att or att <= 0 then
+				att = 2
+			end
+
+			local oldatt = att
+			att = self:GetStatL("ShellAttachmentRaw", att)
+			local angpos = vm:GetAttachment(att)
+
+			if not angpos then
+				att = oldatt
+				angpos = vm:GetAttachment(att)
+			end
+
+			if angpos then
+				fx = EffectData()
+				fx:SetEntity(self)
+				fx:SetOrigin(angpos.Pos)
+				fx:SetAttachment(att)
+				fx:SetNormal(angpos.Ang:Forward())
+				TFA.Effects.Create("tfa_shelleject_smoke", fx)
+			end
+		end
+	end
+end
+
 
 
 

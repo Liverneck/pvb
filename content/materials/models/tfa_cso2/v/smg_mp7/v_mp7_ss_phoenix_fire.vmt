@@ -1,0 +1,17 @@
+"UnlitGeneric"
+{
+	$basetexture "models\tfa_cso2/v/smg_mp7\v_mp7_ss_phoenix_fire"
+	//$surfaceprop "ghostwall"
+	$translucent	"1"
+	$additive "1"
+
+	"Proxies"
+	{
+		"TextureScroll"
+		{
+			"texturescrollvar" $baseTextureTransform
+			"texturescrollrate" .5
+			"texturescrollangle" 180.00
+		}
+	}
+}
