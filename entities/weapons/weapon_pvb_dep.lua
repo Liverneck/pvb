@@ -72,7 +72,6 @@ function SWEP:PrimaryAttack()
 	self:EmitSound( ShootSound )
 	//self:BaseClass.ShootEffects()
 	
-	self.Owner:ViewPunch(Angle(-self.Primary.Recoil,0,0))
 	self:TakePrimaryAmmo(1)
 	self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
 	

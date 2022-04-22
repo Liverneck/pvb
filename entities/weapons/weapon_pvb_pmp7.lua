@@ -74,35 +74,11 @@ function SWEP:PrimaryAttack()
 	self:EmitSound( ShootSound )
 	//self:BaseClass.ShootEffects()
 	
-	self.Owner:ViewPunch(Angle(-self.Primary.Recoil,0,0))
 	self:TakePrimaryAmmo(1)
 	self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
 	
 	
 	ply:LagCompensation(false)
-end
-
-
-SWEP.Secondary.ScopeLevel = 0
-function SWEP:SecondaryAttack()
-	if(self.Secondary.ScopeLevel == 0) then
- 
-		if(SERVER) then
-			self.Owner:SetFOV( 25, 0 )
-		end	
- 
-		self.Secondary.ScopeLevel = 1
- 
-	else if(self.Secondary.ScopeLevel == 1) then
- 
-		if(SERVER) then
-			self.Owner:SetFOV( 0, 0 )
-		end	
- 
-		self.Secondary.ScopeLevel = 0
-
-	end
-	end
 end
 
 function SWEP:CanSecondaryAttack()
