@@ -32,23 +32,23 @@ end
 
 local CTRL_NEXT = bit.bor(IN_ATTACK,IN_MOVELEFT,IN_FORWARD);
 local CTRL_PREV = bit.bor(IN_ATTACK2,IN_MOVERIGHT,IN_BACK);
-local CTRL_CHANGE = bit.bor(IN_DUCK);
+local CTRL_CHANGE = bit.bor(IN_JUMP);
 
 hook.Add( "KeyPress", "PVB.KeyPress.HandleSpectateControls", function(p,key)
 	if p:GetObserverMode() ~= OBS_MODE_NONE then
-		local doChange=tobool(bit.band(key,CTRL_CHANGE));
+		local doChange = tobool(bit.band(key, CTRL_CHANGE));
 
 		if doNext or doPrev or doChange then
 
 			if not p.spec then p.spec = 1 end
 
 			local canspec = {};
-			for _,v in ipairs(team.GetPlayers(TEAM_BOSS))do
+			for _,v in ipairs(team.GetPlayers(TEAM_BOSS)) do
 				if IsValid(v) and v:Alive() then
 					table.insert(canspec,v);
 				end
 			end
-			for _,v in ipairs(team.GetPlayers(TEAM_PLAYERS))do
+			for _,v in ipairs(team.GetPlayers(TEAM_PLAYERS)) do
 				if IsValid(v) and v:Alive() then
 					table.insert(canspec,v);
 				end
@@ -67,16 +67,16 @@ hook.Add( "KeyPress", "PVB.KeyPress.HandleSpectateControls", function(p,key)
 			end
 
 			if p:GetObserverMode() == OBS_MODE_CHASE then
-				local doNext=tobool(bit.band(key,CTRL_NEXT));
-				local doPrev=tobool(bit.band(key,CTRL_PREV));
+				local doNext = tobool(bit.band(key, CTRL_NEXT));
+				local doPrev = tobool(bit.band(key, CTRL_PREV));
 
 				if not canspec or not canspec[1] then
 					return
 				end
 
-				local old=p.spec;
+				local old = p.spec;
 				if doNext then
-					p.spec = p.spec+1;
+					p.spec = p.spec + 1;
 					if p.spec > #canspec then
 						p.spec = 0;
 					end
