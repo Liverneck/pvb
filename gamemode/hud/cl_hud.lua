@@ -128,22 +128,21 @@ end
 /////////////////////
 //END PLAYER HEALTH//
 /////////////////////
+
+/////////////////////
+//Queue Player Hud///
+/////////////////////
 local function DrawQueueHud()
-	local count = 0
-	local DisplayTab = player.GetAll()
-	local Tablo2 = 60
-	for _, pl in ipairs(DisplayTab) do
-		if count >= 13 then break end
-		Tablo2 = Tablo2 + 30
-	end
 	surface.SetDrawColor(61,61,61, 180)
-	surface.DrawRect(10, 100, 250, Tablo2)
+	surface.DrawRect(10, 100, 250, 450)
 	local str = "Boss Queue"
 	surface.SetTextColor(Color(255,255,255))
 	surface.SetTextPos(70, 115)
 	surface.DrawText(str)
 
+	local DisplayTab = player.GetAll()
 	local Tablo = 155
+	local count = 0
 	table.sort(DisplayTab, function(a, b) return a:GetNWInt("QueuePoints", 0) > b:GetNWInt("QueuePoints", 0) end)
 	for _, pl in ipairs(DisplayTab) do
 		if count >= 13 then break end
