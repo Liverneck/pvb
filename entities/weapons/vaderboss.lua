@@ -18,6 +18,7 @@ SWEP.WElements = {
 	["longsword"] = { type = "Model", model = "models/sgg/starwars/weapons/w_vader_saber.mdl", bone = "ValveBiped.Bip01_R_Hand", rel = "", pos = Vector(3, 1, 0), angle = Angle(90, 80, 90), size = Vector(1, 1, 1), color = Color(255, 255, 255, 255), surpresslightning = false, material = "", skin = 0, bodygroup = {} }
 }
 
+SWEP.BossOnly = true
 
 SWEP.FiresUnderwater = true
 SWEP.base					= "weapon_base"

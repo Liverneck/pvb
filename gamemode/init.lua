@@ -29,6 +29,14 @@ function GM:Initialize()
 	FixWeaponsShared()
 end
 
+function GM:PlayerCanPickupWeapon(ply, wep)
+	if ply:Team() == TEAM_BOSS and not wep.BossOnly then
+		return false
+	end
+
+	return true
+end
+
 function GM:EntityTakeDamage(ent, dmg)
 	local ply = dmg:GetAttacker()
 
@@ -36,6 +44,10 @@ function GM:EntityTakeDamage(ent, dmg)
 	if not ent:IsPlayer() then return end
 	if ent:Team() == ply:Team() then return end
 	if ent:Health() == 0 then return end
+
+	if ent:Team() == TEAM_BOSS then
+		ent:SetVelocity(dmg:GetDamageForce() * 0.01)
+	end
 
 	local pos = dmg:GetDamagePosition()
 	local num = dmg:GetDamage()

@@ -13,7 +13,7 @@ PLAYER.CanUseFlashlight     = true
 PLAYER.MaxHealth			= 100
 PLAYER.StartHealth			= 100
 PLAYER.StartArmor			= 0
-PLAYER.DropWeaponOnDie		= false
+PLAYER.DropWeaponOnDie		= true
 PLAYER.AvoidPlayers			= false
 
 player_manager.RegisterClass( "class_player", PLAYER, "player_default" )

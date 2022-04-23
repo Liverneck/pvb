@@ -105,8 +105,11 @@ function PVB:StartRound()
 	game.SetGlobalCounter(StateName, PVB_ACTIVE)
 	PVB.TRANSMITTER:SetBossMaxHealth(0)
 	for k,v in pairs(player_GetAll()) do
+		v:RemoveEFlags(EFL_NO_DAMAGE_FORCES)
+
 		if v:Team() == TEAM_BOSS then
 			player_manager.SetPlayerClass(v, "class_boss")
+			v:AddEFlags(EFL_NO_DAMAGE_FORCES)
 			v:Spawn()
 			PVB.TRANSMITTER:SetBossMaxHealth(PVB.TRANSMITTER:GetBossMaxHealth() + v:Health())
 			print("[PVB]" .. v:Nick() .. " <" .. v:SteamID() .. "> " .. " Has been selected as the boss")
