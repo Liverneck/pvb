@@ -129,7 +129,17 @@ end
 //END PLAYER HEALTH//
 /////////////////////
 
+///////////////////
+//PLAYER WEAPON////
+///////////////////
 
+local function DrawWeaponName()
+	surface.SetFont("PVBHUDHealth")
+	local str = "Weapon: "..tostring(LocalPlayer():GetActiveWeapon().PrintName)
+	surface.SetTextColor(Color(255,255,255))
+	surface.SetTextPos(10, maxy-80)
+	surface.DrawText(str)
+end
 
 hook.Add("HUDPaint", "PVB.CustomHUD", function()
 	if PVB.TRANSMITTER:GetRoundActive() then
@@ -138,6 +148,7 @@ hook.Add("HUDPaint", "PVB.CustomHUD", function()
 	end
 	if LocalPlayer():Alive() and LocalPlayer():Team() != TEAM_SPECTATOR then
 		DrawPlayerHealth()
+		DrawWeaponName()
 	end
 end)
 
