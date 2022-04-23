@@ -1,5 +1,5 @@
 local DefaultTable = {
-	{["weapon_pvb_ak47"] = 1, ["weapon_pvb_fiveseven"] = 1},			//Default
+	{["tfa_cso_ak47"] = 1},			//Default
 	{},												//Rarity 1
 	{},												//Rarity 2
 	{},												//Rarity 3
@@ -10,7 +10,7 @@ local DefaultTable = {
 }
 
 function PVB:GetItems(ply)
-	return ply:GetPData("PVB_Items", util.TableToJSON(PVB.Config.DefaultItems))
+	return util.TableToJSON(PVB.Config.DefaultItems)
 end
 
 function PVB:SaveData(ply)
@@ -23,21 +23,6 @@ function PVB:SaveData(ply)
 		v:SetPData("PVB_Items", table.concat(v.PVB_Items, ";"))
 	end
 end
-
-
-//FIX IT
---[[ function PVB:HasWep(ply, weaponToCheck)
-	items = PVB:GetItems(ply)
-	for rarityLevel in items do
-		for k,v in rarityLevel do
-			if(if k == weaponToCheck) then
-				return true
-			end
-		end
-	end
-	return false
-end
-end ]]
 
 function PVB:GiveWeapon(ply, weaponName, rarity)
 	rarity = rarity + 1 //cause numbers start at 1 apparently and break everything
@@ -61,18 +46,5 @@ end
 
 
 hook.Add("PlayerInitialSpawn", "PVB.LoadData", function(ply)
-	ply.PVB_Items = util.JSONToTable(PVB:GetItems(ply))
+	ply.PVB_Items = PVB.Config.DefaultItems
 end)
-
-hook.Add("PlayerDisconnected", "PVB.SaveData", PVB.SaveData)
-
-hook.Add("ShutDown", "PVB.SaveData", PVB.SaveData)
-
-
-util.AddNetworkString("PVB.SendLoadoutInfo")
-
-function GM:ShowSpare2(ply) 
-	net.Start("PVB.SendLoadoutInfo")
-		net.WriteString(PVB:GetItems(ply))
-	net.Send(ply)
-end
