@@ -29,10 +29,11 @@ end)
 local BossHPMem = 0
 local Plus = ScrW()/2+ScrW()/6
 local Minus = ScrW()/2-ScrW()/6
+local ScrOver6 = ScrW()/6
 
 local function DrawBossHealth()
 	BossHPMem = Lerp(FrameTime()*9, BossHPMem, GetBossHealth())
-	surface.SetDrawColor(100,100,100,250)
+	surface.SetDrawColor(100,100,100)
 	draw.NoTexture()
 	surface.DrawPoly{
 		{x=Minus-10, y=0},
@@ -40,10 +41,15 @@ local function DrawBossHealth()
 		{x=Plus-45, y=55},
 		{x=Minus+45, y=55}
 	}
-	for i=0, 5 do
-		surface.DrawOutlinedRect(i,i,maxx-2*i,maxy-2*i)
+		
+	if math.Round(GetBossHealth()/PVB.TRANSMITTER:GetBossMaxHealth()*100) > 75 then
+		surface.SetDrawColor(55,92,255)
+	elseif math.Round(GetBossHealth()/PVB.TRANSMITTER:GetBossMaxHealth()*100) > 25 then
+		surface.SetDrawColor(252,255,55)
+	elseif math.Round(GetBossHealth()/PVB.TRANSMITTER:GetBossMaxHealth()*100) <= 25 then
+		surface.SetDrawColor(255,55,55)
 	end
-	surface.SetDrawColor(255,55,55,255)
+
 	render.SetScissorRect(0,6,(Minus)+((Plus)-(Minus))*(BossHPMem/PVB.TRANSMITTER:GetBossMaxHealth()), 50, true)
 	surface.DrawPoly{
 		{x=Minus, y=0},
@@ -60,6 +66,17 @@ local function DrawBossHealth()
 	surface.DrawText(str)
 end
 
+///////////////
+//BOSS RAGE////
+///////////////
+local function DrawBossRage()
+	surface.SetFont("PVBHUDHealth")
+	local str = "Special: " .. tostring(math.Round(GetBossHealth()/PVB.TRANSMITTER:GetBossMaxHealth()*100),1).. "%"
+	local sizew, sizeh = surface.GetTextSize(str)
+	surface.SetTextColor(Color(255,255,255))
+	surface.SetTextPos(ScrW()/2-sizew/2, sizeh+30)
+	surface.DrawText(str)
+end
 
 
 ///////////////////
@@ -70,33 +87,40 @@ end
 //LOCAL PLAYER HEALTH//
 ///////////////////////
 
-local ScrOver6 = ScrW()/6
+local ScrOver6 = ScrW()/5
 local PlyHealthMem = 100
 local function DrawPlayerHealth()
 	PlyHealthMem = Lerp(FrameTime()*12, PlyHealthMem, LocalPlayer():Health())
-	surface.SetDrawColor(100,100,100,250)
+	surface.SetDrawColor(100,100,100)
 	draw.NoTexture()
 	surface.DrawPoly{
 		{x=5, y=maxy-50},
-		{x=ScrOver6+10, y=maxy-50},
-		{x=ScrOver6+55, y=maxy-5},
-		{x=5, y=maxy-5}
+		{x=ScrOver6+15, y=maxy-50},
+		{x=ScrOver6+60, y=maxy},
+		{x=5, y=maxy}
 	}
-	surface.SetDrawColor(75,55,255,255)
+	
+	if math.Round(LocalPlayer():Health()/LocalPlayer():GetMaxHealth()*100) > 75 then
+		surface.SetDrawColor(55,255,55)
+	elseif math.Round(LocalPlayer():Health()/LocalPlayer():GetMaxHealth()*100) > 25 then
+		surface.SetDrawColor(252,255,55)
+	elseif math.Round(LocalPlayer():Health()/LocalPlayer():GetMaxHealth()*100) <= 25 then
+		surface.SetDrawColor(255,55,55)
+	end
 	render.SetScissorRect(0,0,0,0,false)
 	render.SetScissorRect(5,maxy-45, 5+(ScrOver6+45-5)*(PlyHealthMem/LocalPlayer():GetMaxHealth()), maxy-5, true)
 	surface.DrawPoly{
-		{x=5, y=maxy-45},
+		{x=10, y=maxy-45},
 		{x=ScrOver6+5, y=maxy-45},
 		{x=ScrOver6+45, y=maxy-5},
-		{x=5, y=maxy-5}
+		{x=10, y=maxy-5}
 	}
 	render.SetScissorRect(0,0,0,0,false)
 	surface.SetFont("PVBHUDHealth")
 	local str = tostring(LocalPlayer():Health() .. "/" .. tostring(LocalPlayer():GetMaxHealth()) .. ", " .. tostring(math.Round(LocalPlayer():Health()/LocalPlayer():GetMaxHealth()*100),1).. "%")
 	local _, sizeh = surface.GetTextSize(str)
 	surface.SetTextColor(Color(225,225,225,255))
-	surface.SetTextPos(15, maxy-sizeh-11)
+	surface.SetTextPos(20, maxy-sizeh-11)
 	surface.DrawText(str)
 end
 
@@ -110,6 +134,7 @@ end
 hook.Add("HUDPaint", "PVB.CustomHUD", function()
 	if PVB.TRANSMITTER:GetRoundActive() then
 		DrawBossHealth()
+		DrawBossRage()
 	end
 	if LocalPlayer():Alive() and LocalPlayer():Team() != TEAM_SPECTATOR then
 		DrawPlayerHealth()
