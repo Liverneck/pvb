@@ -128,7 +128,38 @@ end
 /////////////////////
 //END PLAYER HEALTH//
 /////////////////////
+local function DrawQueueHud()
+	local count = 0
+	local DisplayTab = player.GetAll()
+	local Tablo2 = 60
+	for _, pl in ipairs(DisplayTab) do
+		if count >= 13 then break end
+		Tablo2 = Tablo2 + 30
+	end
+	surface.SetDrawColor(61,61,61, 180)
+	surface.DrawRect(10, 100, 250, Tablo2)
+	local str = "Boss Queue"
+	surface.SetTextColor(Color(255,255,255))
+	surface.SetTextPos(70, 115)
+	surface.DrawText(str)
 
+	local Tablo = 155
+	table.sort(DisplayTab, function(a, b) return a:GetNWInt("QueuePoints", 0) > b:GetNWInt("QueuePoints", 0) end)
+	for _, pl in ipairs(DisplayTab) do
+		if count >= 13 then break end
+		local strply = nil
+		if #pl:Name() > 12 then
+			strply = string.sub(pl:Name(), 1, 12) .. "... - " .. tostring(pl:GetNWInt("QueuePoints", 0))
+		else
+			strply = pl:Name() .. " - " .. tostring(pl:GetNWInt("QueuePoints", 0))
+		end
+		surface.SetTextPos(15, Tablo)
+		Tablo = Tablo + 30
+		surface.SetTextColor(Color(255,255,255))
+		surface.DrawText(strply)
+		count = count + 1
+	end
+end
 ///////////////////
 //PLAYER WEAPON////
 ///////////////////
@@ -145,6 +176,7 @@ hook.Add("HUDPaint", "PVB.CustomHUD", function()
 	if PVB.TRANSMITTER:GetRoundActive() then
 		DrawBossHealth()
 		DrawBossRage()
+		DrawQueueHud()
 	end
 	if LocalPlayer():Alive() and LocalPlayer():Team() != TEAM_SPECTATOR then
 		DrawPlayerHealth()

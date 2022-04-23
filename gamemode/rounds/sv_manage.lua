@@ -101,6 +101,7 @@ function PVB:EndRound(winner)
 	game.SetGlobalCounter(StateName, PVB_SWITCH)
 
 	for k,v in pairs(player.GetAll()) do
+		v:SetNWInt("QueuePoints", v:GetNWInt("QueuePoints", 0) + math.random(100))
 		if(math.random(0,PVB.Config.WeaponDropChance) == 2) then
 			//possibleDrops = {"",}
 			//weaponName = possibleDrops[math.random(#possibleDrops)]
@@ -215,10 +216,8 @@ net.Receive("GrantedWeaponConVar", function (len, ply)
 end)
 
 hook.Add("PlayerInitialSpawn", "PVB.Rounds.OnConnect", function(ply)
---[[ 	if(#player.GetAll() == 1) then
-		ply:KillSilent()
-	end ]]
 	timer.Simple(0, function()
+		ply:SetNWInt("QueuePoints", 0)
 		ply:KillSilent()
 		ply:SetTeam(TEAM_SPECTATOR)
 		ply:Spectate(OBS_MODE_ROAMING)
@@ -235,9 +234,11 @@ hook.Add("PlayerInitialSpawn", "PVB.Rounds.OnConnect", function(ply)
 	end
 	if GAMEMODE:AliveBosses() == 0 and #player.GetAll() >= 2 then
 		PVB:EndRound(true)
+		
 	elseif GAMEMODE:AlivePlayers() == 0 and #player.GetAll() >= 2 then
 		PVB:EndRound(false)
 	end
+
 end)
 
 hook.Add("PlayerDisconnect", "PVB.Rounds.Disconnect", function(ply)
