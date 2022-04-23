@@ -1,172 +1,149 @@
 
 AddCSLuaFile()
-SWEP.Author						= "Ancient Entity & Friends"
-SWEP.Base						= "weapon_base"
+SWEP.Base						= "tfa_gun_base"
 SWEP.PrintName					= "PVB Weapon Base"
-SWEP.Instructions				= [[Default PVB Weapon]]
-
-SWEP.ViewModel				= "models/weapons/cstrike/c_rif_aug.mdl"
-SWEP.WorldModel				= "models/weapons/w_rif_aug.mdl"
-SWEP.ViewModelFlip				= false
-SWEP.UseHands					= true
-SWEP.SetHoldType				= "ar2"
-
-SWEP.Weight						= 8
-SWEP.AutoSwitchTo				= true
-SWEP.AutoSwitchFrom				= false
-
-SWEP.Slot						= 2
-SWEP.SlotPos					= 0
-
-SWEP.DrawAmmo					= false
-SWEP.DrawCrosshair				= true
-
-SWEP.Spawnable					= false
-SWEP.AdminSpawnable				= true
-
-SWEP.ShouldDropOnDie = false
-
-SWEP.Primary.ClipSize			= 30
-SWEP.Primary.DefaultClip		= 90
-SWEP.Primary.Ammo				= "357"
-SWEP.Primary.Automatic			= true
-SWEP.Primary.Recoil				= 0.5
-SWEP.Primary.Damage				= 135
-SWEP.Primary.NumShots			= 1
-SWEP.Primary.Spread				= 0.07
-SWEP.Primary.Cone				= 0.07
-SWEP.Primary.Delay				= 0.12
-
-SWEP.Secondary.ClipSize			= -1
-SWEP.Secondary.DefaultClip		= -1
-SWEP.Secondary.Ammo				= "none"
-SWEP.Secondary.Automatic		= false
-
-local ShootSound = Sound("Weapon_Aug.Single")
+SWEP.Instructions				= ""
+SWEP.DrawCrosshair              = true
+SWEP.DrawAmmo                   = true -- Should draw the default HL2 ammo counter
 
 
-function SWEP:Initialize()
-	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--SHIT AND STUFF--
+
+function SWEP:DrawHUDAmmo() return end
+if CLIENT then
+    function SWEP:Initialize()
+        self.BaseClass.Initialize(self)
+        GetConVar("cl_tfa_hud_enabled"):SetBool(false)
+    end
 end
 
-function SWEP:PrimaryAttack()
-	if(not self:CanPrimaryAttack()) then
-		return
+local function Dryfire(self, self2)
+
+	if self2.GetHasPlayedEmptyClick(self) then return end
+
+	self2.SetHasPlayedEmptyClick(self, true)
+
+	if SERVER and self:GetStatL("Primary.SoundHint_DryFire") then
+		sound.EmitHint(SOUND_COMBAT, self:GetPos(), 500, 0.2, self:GetOwner())
 	end
-	
-	local ply = self:GetOwner()
-	
-	ply:LagCompensation(true)
-	
-	local Bullet = {}
-		Bullet.Num		=	self.Primary.NumShots
-		Bullet.Src		=	ply:GetShootPos()
-		Bullet.Dir		=	ply:GetAimVector()
-		Bullet.Spread	=	Vector(self.Primary.Spread,self.Primary.Spread,0)
-		Bullet.Tracer	=	0
-		Bullet.Damage	=	self.Primary.Damage
-		Bullet.AmmoType =	self.Primary.Ammo
-	
-	self:FireBullets(Bullet)
-	self:ShootEffects()
-	self:EmitSound( ShootSound )
-	//self:BaseClass.ShootEffects()
-	
-	self.Owner:ViewPunch(Angle(-self.Primary.Recoil,0,0))
-	self:TakePrimaryAmmo(1)
-	self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
-	
-	
-	ply:LagCompensation(false)
+
+	if self:GetOwner():IsNPC() or self:KeyPressed(IN_ATTACK) then
+		local enabled, tanim, ttype = self:ChooseDryFireAnim()
+
+		if enabled then
+			self:SetNextPrimaryFire(l_CT() + self:GetStatL("Primary.DryFireDelay", self:GetActivityLength(tanim, true, ttype)))
+			return
+		end
+	end
+
+	if IsFirstTimePredicted() then
+		self:EmitSound(self:GetStatL("Primary.Sound_DryFire"))
+	end
 end
 
-function SWEP:CanSecondaryAttack()
-	return false
-end
+function SWEP:CanPrimaryAttack()
+	local self2 = self:GetTable()
 
-function SWEP:VMIV()
-	local owent = self:GetOwner()
+	local v = hook.Run("TFA_PreCanPrimaryAttack", self)
 
-	if not IsValid(self.OwnerViewModel) then
-		if IsValid(owent) and owent.GetViewModel then
-			self.OwnerViewModel = owent:GetViewModel()
+	if v ~= nil then
+		return v
+	end
+
+	stat = self:GetStatus()
+
+	if not TFA.Enum.ReadyStatus[stat] and stat ~= TFA.Enum.STATUS_SHOOTING then
+		if self:GetStatL("LoopedReload") and TFA.Enum.ReloadStatus[stat] then
+			self:SetReloadLoopCancel(true)
 		end
 
 		return false
-	else
-		if not IsValid(owent) or not owent.GetViewModel then
-			self.OwnerViewModel = nil
-
-			return false
-		end
-
-		return self.OwnerViewModel
-	end
-end
-
-function SWEP:CleanParticles()
-	if not IsValid(self) then return end
-
-	if self.StopParticles then
-		self:StopParticles()
 	end
 
-	if self.StopParticleEmission then
-		self:StopParticleEmission()
-	end
+	if self:IsSafety() then
+		if IsFirstTimePredicted() then
+			self:EmitSound(self:GetStatL("Primary.Sound_DrySafety"))
 
-	if not self:VMIV() then return end
-	local vm = self.OwnerViewModel
-
-	if IsValid(vm) then
-		if vm.StopParticles then
-			vm:StopParticles()
-		end
-
-		if vm.StopParticleEmission then
-			vm:StopParticleEmission()
-		end
-	end
-end
-
-function SWEP:EjectionSmoke(ovrr)
-	local retVal = hook.Run("TFA_EjectionSmoke",self)
-	if retVal ~= nil then
-		return retVal
-	end
-	if TFA.GetEJSmokeEnabled() and (self:GetStatL("EjectionSmokeEnabled") or ovrr) then
-		local vm = self:IsFirstPerson() and self.OwnerViewModel or self
-
-		if IsValid(vm) then
-			local att = vm:LookupAttachment(self:GetStatL("ShellAttachment"))
-
-			if not att or att <= 0 then
-				att = 2
-			end
-
-			local oldatt = att
-			att = self:GetStatL("ShellAttachmentRaw", att)
-			local angpos = vm:GetAttachment(att)
-
-			if not angpos then
-				att = oldatt
-				angpos = vm:GetAttachment(att)
-			end
-
-			if angpos then
-				fx = EffectData()
-				fx:SetEntity(self)
-				fx:SetOrigin(angpos.Pos)
-				fx:SetAttachment(att)
-				fx:SetNormal(angpos.Ang:Forward())
-				TFA.Effects.Create("tfa_shelleject_smoke", fx)
+			if SERVER and self:GetStatL("Primary.SoundHint_DryFire") then
+				sound.EmitHint(SOUND_COMBAT, self:GetPos(), 200, 0.2, self:GetOwner())
 			end
 		end
+
+		if l_CT() < self:GetLastSafetyShoot() + 0.2 then
+			self:CycleSafety()
+			-- self:SetNextPrimaryFire(l_CT() + 0.1)
+		end
+
+		self:SetLastSafetyShoot(l_CT() + 0.2)
+
+		return
 	end
+
+	if self:GetSprintProgress() >= 0.1 and not self:GetStatL("AllowSprintAttack", false) then
+		return false
+	end
+
+	if self:GetStatL("Primary.ClipSize") <= 0 and self:Ammo1() < self:GetStatL("Primary.AmmoConsumption") then
+		Dryfire(self, self2)
+		return false
+	end
+
+	if self:GetPrimaryClipSize(true) > 0 and self:Clip1() < self:GetStatL("Primary.AmmoConsumption") then
+		self:Reload()
+		return false
+	end
+
+	if self2.GetStatL(self, "Primary.FiresUnderwater") == false and self:GetOwner():WaterLevel() >= 3 then
+		self:SetNextPrimaryFire(l_CT() + 0.5)
+		self:EmitSound(self:GetStatL("Primary.Sound_Blocked"))
+		return false
+	end
+
+	self2.SetHasPlayedEmptyClick(self, false)
+
+	if l_CT() < self:GetNextPrimaryFire() then return false end
+
+	local v2 = hook.Run("TFA_CanPrimaryAttack", self)
+
+	if v2 ~= nil then
+		return v2
+	end
+
+	if self:CheckJammed() then
+		if IsFirstTimePredicted() then
+			self:EmitSound(self:GetStatL("Primary.Sound_Jammed"))
+		end
+
+		local typev, tanim = self:ChooseAnimation("shoot1_empty")
+
+		if typev ~= TFA.Enum.ANIMATION_SEQ then
+			self:SendViewModelAnim(tanim)
+		else
+			self:SendViewModelSeq(tanim)
+		end
+
+		self:SetNextPrimaryFire(l_CT() + 1)
+
+		return false
+	end
+
+	return true
 end
-
-
-
 
 
 
