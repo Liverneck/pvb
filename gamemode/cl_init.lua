@@ -1,23 +1,12 @@
-//cl only
 include("shared.lua")
 
 local function FixWeapons()
 	weapons.GetStored("tfa_gun_base").DrawHUD = nil
-
-	for _, wep in ipairs(weapons.GetList()) do
-		local wepTab = weapons.GetStored(wep.ClassName)
-
-		if wepTab.Primary then
-			wepTab.Primary.KickUp = 0
-			wepTab.Primary.KickDown = 0
-			wepTab.Primary.KickHorizontal = 0
-			wepTab.Primary.StaticRecoilFactor = 0
-		end
-	end
 end
 
 function GM:Initialize()
 	FixWeapons()
+	FixWeaponsShared()
 end
 
 local fadetime = CreateClientConVar("adn_fadetime", "0.75", true, false, "")
