@@ -1,36 +1,12 @@
 
 AddCSLuaFile()
-SWEP.Base						= "tfa_gun_base"
-SWEP.PrintName					= "PVB Weapon Base"
-SWEP.Instructions				= ""
-SWEP.DrawCrosshair              = true
-SWEP.DrawAmmo                   = true -- Should draw the default HL2 ammo counter
+SWEP.Base							= "tfa_gun_base"
+SWEP.PrintName						= "PVB Weapon Base"
+SWEP.Instructions					= ""
+SWEP.DrawCrosshair					= true
+SWEP.DrawAmmo						= true -- Should draw the default HL2 ammo counter
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
---SHIT AND STUFF--
-
-function SWEP:DrawHUDAmmo() return end
-if CLIENT then
-    function SWEP:Initialize()
-        self.BaseClass.Initialize(self)
-        GetConVar("cl_tfa_hud_enabled"):SetBool(false)
-    end
-end
 
 local function Dryfire(self, self2)
 
