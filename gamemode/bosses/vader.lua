@@ -15,7 +15,7 @@ end
 
 //Include weapons/ammo/armor/etc in BOSS:Loadout
 function BOSS:Loadout(ply)
-	ply:SetHealth(#team.GetPlayers(TEAM_PLAYERS)*4800) //Health multiplier so health scales depending on player count
+	ply:SetHealth(#team.GetPlayers(TEAM_PLAYERS) * 4800) //Health multiplier so health scales depending on player count
 	ply:Give("vaderboss")
 end
 PVB.RegisterBossClass(BOSS)
