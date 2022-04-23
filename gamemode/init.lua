@@ -1,3 +1,5 @@
+util.AddNetworkString("arctic_damagenum")
+
 AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 
@@ -19,11 +21,36 @@ include("content.lua")
 
 include("shared.lua")
 
+function GM:EntityTakeDamage(ent, dmg)
+	local ply = dmg:GetAttacker()
+
+	if not ply:IsPlayer() then return end
+	if not ent:IsPlayer() then return end
+	if ent:Team() == ply:Team() then return end
+	if ent:Health() == 0 then return end
+
+	local pos = dmg:GetDamagePosition()
+	local num = dmg:GetDamage()
+
+	num = math.Round(num, 1)
+
+	if not pos then
+		pos = ent:GetPos()
+	end
+
+	net.Start("arctic_damagenum")
+	net.WriteVector(pos)
+	net.WriteFloat(num)
+	net.Send(ply)
+end
+
 function GM:PlayerShouldTakeDamage(ply, attacker)
 	if attacker:IsWeapon() then
 		if ply:Team() == attacker:GetOwner():Team() then
 			return false
 		end
+	elseif attacker:IsPlayer() and attacker:Team() == ply:Team() then
+		return false
 	end
 
 	return true
