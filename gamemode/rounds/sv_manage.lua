@@ -78,9 +78,13 @@ function PVB:StartRound()
 			PrintMessage(HUD_PRINTTALK, "[PVB] " .. v:Nick() .. " Has been selected as the boss")
 			//print("[PVBGAMEMODE]" .. v:Nick() .." <"..v:SteamID().."> " .." Has been selected as the ".. PVB.RoundBoss.PName)
 			//PrintMessage(HUD_PRINTTALK, "[PVBGAMEMODE] " .. v:Nick() .. " Has been selected as the " .. PVB.RoundBoss.PName)
+			player_manager.SetPlayerClass(v, "class_boss")
+		else
+			player_manager.SetPlayerClass(v, "class_player")
 		end
+
 		
-		if(v:Team() == TEAM_PLAYERS) then
+		if v:Team() == TEAM_PLAYERS then
 			v:Give("weapon_fists")
 		end
 	end
