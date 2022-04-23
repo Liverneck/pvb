@@ -21,6 +21,23 @@ include("content.lua")
 
 include("shared.lua")
 
+local function FixWeapons()
+	for _, wep in ipairs(weapons.GetList()) do
+		local wepTab = weapons.GetStored(wep.ClassName)
+
+		if wepTab.Primary then
+			wepTab.Primary.KickUp = 0
+			wepTab.Primary.KickDown = 0
+			wepTab.Primary.KickHorizontal = 0
+			wepTab.Primary.StaticRecoilFactor = 0
+		end
+	end
+end
+
+function GM:Initialize()
+	FixWeapons()
+end
+
 function GM:EntityTakeDamage(ent, dmg)
 	local ply = dmg:GetAttacker()
 
