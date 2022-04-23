@@ -9,8 +9,6 @@ local StateName = "PVB.RoundState"
 
 PVB.BossNum = 0
 
-include("..//config//sh_config.lua")
-
 PVB.GenericWeapons = PVB.Config.GenericWeapons
 PVB.SpecialWeapons = PVB.Config.SpecialWeapons
 PVB.RareWeapons = PVB.Config.RareWeapons

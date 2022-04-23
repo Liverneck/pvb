@@ -1,6 +1,3 @@
-include("..\\config\\sh_config.lua")
-
-
 local DefaultTable = {
 	{["weapon_pvb_ak47"] = 1, ["weapon_pvb_fiveseven"] = 1},			//Default
 	{},												//Rarity 1
@@ -22,6 +19,7 @@ function PVB:SaveData(ply)
 		return
 	end
 	for k,v in pairs(player.GetAll()) do
+		PrintTable(v.PVB_Items)
 		v:SetPData("PVB_Items", table.concat(v.PVB_Items, ";"))
 	end
 end

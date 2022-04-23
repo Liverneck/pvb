@@ -1,2 +1,2 @@
 //cl only
-include("init.lua")
+include("shared.lua")
