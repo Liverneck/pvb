@@ -8,7 +8,10 @@ BOSS.Music = {
 
 
 function BOSS:Init()
-	local ply = table.Random(player.GetAll())
+	local tabs = player.GetAll()
+	table.sort(tabs, function(a, b) return a:GetNWInt("QueuePoints", 0) > b:GetNWInt("QueuePoints", 0) end)
+	local ply = tabs[1]
+	ply:SetNWInt("QueuePoints", 0)
 	ply:SetTeam(TEAM_BOSS)
 	ply.BossPlayerModel = "models/player/darth_vader.mdl" //Bosses Model
 end

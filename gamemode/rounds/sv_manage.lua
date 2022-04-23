@@ -101,7 +101,7 @@ function PVB:EndRound(winner)
 	game.SetGlobalCounter(StateName, PVB_SWITCH)
 
 	for k,v in pairs(player.GetAll()) do
-		v:SetNWInt("QueuePoints", v:GetNWInt("QueuePoints", 0) + math.random(100))
+		v:SetNWInt("QueuePoints", v:GetNWInt("QueuePoints", 0) + 10)
 		if(math.random(0,PVB.Config.WeaponDropChance) == 2) then
 			//possibleDrops = {"",}
 			//weaponName = possibleDrops[math.random(#possibleDrops)]
