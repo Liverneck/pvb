@@ -39,18 +39,15 @@ local ShotgunList = {
 
 local SniperList = {
 	"tfa_cso_scout",
-	"tfa_cso_elvenranger",
 }
 
 local SpecialList = {
+	"tfa_cso_elvenranger",
 	"tfa_cso_milkorm32",
 	"tfa_cso_m60",
 	"tfa_cso_m60craft",
 	"tfa_cso_crossbow",
 }
-
-team.SetSpawnPoint( TEAM_BOSS,"info_terrorist_start" );
-team.SetSpawnPoint( TEAM_PLAYERS,"info_player_start" );
 
 resource.AddFile("models/w_winchester_1873.mdl")
 
@@ -144,7 +141,8 @@ function PVB:EndRound(winner)
 	game.SetGlobalCounter(StateName, PVB_SWITCH)
 
 	for k,v in pairs(player.GetAll()) do
-		v:SetNWInt("QueuePoints", v:GetNWInt("QueuePoints", 0) + 10)
+		v.DealtDamage = v.DealtDamage or 0
+		v:SetNWInt("QueuePoints", v:GetNWInt("QueuePoints", 0) + 10 + math.floor(v.DealtDamage / 500))
 	end
 	
 	timer.Create("StartNextRound", 5, 1, function()

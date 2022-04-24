@@ -2,12 +2,17 @@
 GM.Version = "0.2"
 GM.Name = "Players VS BOSS"
 GM.Author = "By Ancient Entity & Friends"
+GM.TeamBased = true
 GM.MinPlayers = 2
+
 PVB = {}
 
 DeriveGamemode("base")
 DEFINE_BASECLASS("gamemode_base")
 
+GM.ShowTeam = nil
+
+include("sh_util.lua")
 include("team_spectator.lua")
 include("team_players.lua")
 include("team_boss.lua")

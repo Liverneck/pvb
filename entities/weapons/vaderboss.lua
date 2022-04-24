@@ -52,49 +52,48 @@ end
 
 function SWEP:PlayWeaponSound( snd )
 	if ( CLIENT ) then return end
-	self.Owner:EmitSound( snd )
+	self:GetOwner():EmitSound( snd )
 end
 
 function SWEP:Deploy()
-    
-    self.Weapon:EmitSound(Sound("weapons/melee/saberon/saber_on-0"..math.random(1,1)..".wav"))
-	self.Weapon:SendWeaponAnim( ACT_VM_DRAW )
+	self:EmitSound(Sound("weapons/melee/saberon/saber_on-0" .. math.random(1,1) .. ".wav"))
+	self:SendWeaponAnim( ACT_VM_DRAW )
 	self:SetWeaponHoldType(self.HoldType)
-
 end
 	
 function SWEP:PrimaryAttack()
-
+	self:GetOwner():LagCompensation(true)
 	local tr = {}
-	tr.start = self.Owner:GetShootPos()
-	tr.endpos = self.Owner:GetShootPos() + ( self.Owner:GetAimVector() * 75 )
-	tr.filter = self.Owner
+	tr.start = self:GetOwner():GetShootPos()
+	tr.endpos = self:GetOwner():GetShootPos() + ( self:GetOwner():GetAimVector() * 75 )
+	tr.filter = self:GetOwner()
 	tr.mask = MASK_SHOT
 	local trace = util.TraceLine( tr )
+	self:GetOwner():LagCompensation(false)
 	
-		if ( trace.Hit ) then
-			self.Weapon:EmitSound(Sound("weapons/melee/saberhit/saber_hit-0"..math.random(1,4)..".wav"))
-			self.Weapon:SendWeaponAnim( ACT_VM_HITCENTER )
-			bullet = {}
-			bullet.Num    = 1
-			bullet.Src    = self.Owner:GetShootPos()
-			bullet.Dir    = self.Owner:GetAimVector()
-			bullet.Spread = Vector(0, 0, 0)
-			bullet.Tracer = 0
-			bullet.Force  = 8
-			bullet.Damage = self.Primary.Damage
-			self.Owner:FireBullets( bullet )
-			self.Weapon:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
-			self.Owner:SetAnimation( PLAYER_ATTACK1 )
-				
-		else
-			self.Weapon:EmitSound(Sound("weapons/melee/saberswing/saber_swing-0"..math.random(1,1)..".wav"))
-			self.Weapon:SendWeaponAnim( ACT_VM_MISSCENTER )
-			self.Weapon:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
-			timer.Simple(0, function()
-			self.Owner:SetAnimation( PLAYER_ATTACK1 )
-			end)	
-		end
+	if ( trace.Hit ) then
+		self:EmitSound(Sound("weapons/melee/saberhit/saber_hit-0" .. math.random(1,4) .. ".wav"))
+		self:SendWeaponAnim( ACT_VM_HITCENTER )
+		bullet = {}
+		bullet.Num    = 1
+		bullet.Src    = self:GetOwner():GetShootPos()
+		bullet.Dir    = self:GetOwner():GetAimVector()
+		bullet.Spread = Vector(0, 0, 0)
+		bullet.Tracer = 0
+		bullet.Force  = 8
+		bullet.Damage = self.Primary.Damage
+		self:GetOwner():FireBullets( bullet )
+		self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
+		self:GetOwner():SetAnimation( PLAYER_ATTACK1 )
+			
+	else
+		self:EmitSound(Sound("weapons/melee/saberswing/saber_swing-0" .. math.random(1,1) .. ".wav"))
+		self:SendWeaponAnim( ACT_VM_MISSCENTER )
+		self:SetNextPrimaryFire( CurTime() + self.Primary.Delay )
+		timer.Simple(0, function()
+			self:GetOwner():SetAnimation( PLAYER_ATTACK1 )
+		end)	
+	end
 		
 	timer.Create( "Idle", self:SequenceDuration(), 1, function() 
 	if ( !IsValid( self ) ) then 
@@ -102,13 +101,8 @@ function SWEP:PrimaryAttack()
 	end 
 			self:SendWeaponAnim( ACT_VM_IDLE ) 
 	end )
-
 end
-
-
 
 function SWEP:SecondaryAttack()
 
 end
-
-

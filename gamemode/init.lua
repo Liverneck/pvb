@@ -3,6 +3,7 @@ util.AddNetworkString("arctic_damagenum")
 AddCSLuaFile("cl_init.lua")
 AddCSLuaFile("shared.lua")
 
+AddCSLuaFile("sh_util.lua")
 AddCSLuaFile("team_spectator.lua")
 AddCSLuaFile("team_players.lua")
 AddCSLuaFile("team_boss.lua")
@@ -17,6 +18,8 @@ AddCSLuaFile("loadout/manifest.lua")
 AddCSLuaFile("tutorial/sh_tutorial.lua")
 
 include("content.lua")
+
+include("obj_player_extend_sv.lua")
 
 include("shared.lua")
 
@@ -37,6 +40,36 @@ function GM:PlayerCanPickupWeapon(ply, wep)
 	return true
 end
 
+function GM:PlayerInitialSpawn( pl, transiton )
+	pl:SetTeam( TEAM_UNASSIGNED )
+end
+
+function GM:PlayerSpawn( ply, transiton )
+	if self.TeamBased and (ply:Team() == TEAM_SPECTATOR or ply:Team() == TEAM_UNASSIGNED) then
+		self:PlayerSpawnAsSpectator(ply)
+		return
+	end
+
+	-- Stop observer mode
+	ply:UnSpectate()
+
+	ply:SetupHands()
+
+	player_manager.OnPlayerSpawn( ply, transiton )
+	player_manager.RunClass( ply, "Spawn" )
+
+	-- If we are in transition, do not touch player's weapons
+	if not transiton then
+		-- Call item loadout function
+		hook.Call("PlayerLoadout", GAMEMODE, ply)
+	end
+
+	-- Set player model
+	hook.Call("PlayerSetModel", GAMEMODE, ply)
+
+	ply.DealtDamage = 0
+end
+
 function GM:EntityTakeDamage(ent, dmg)
 	local ply = dmg:GetAttacker()
 
@@ -44,14 +77,15 @@ function GM:EntityTakeDamage(ent, dmg)
 	if not ent:IsPlayer() then return end
 	if ent:Team() == ply:Team() then return end
 	if ent:Health() == 0 then return end
-
-	if ent:Team() == TEAM_BOSS then
-		ent:SetVelocity(dmg:GetDamageForce() * 0.01)
-	end
-
+	
 	local pos = dmg:GetDamagePosition()
 	local num = dmg:GetDamage()
 
+	if ent:Team() == TEAM_BOSS then
+		ent:SetVelocity(dmg:GetDamageForce() * 0.05)
+		ply.DealtDamage = ply.DealtDamage + dmg:GetDamage()
+	end
+	
 	num = math.Round(num, 1)
 
 	if not pos then
