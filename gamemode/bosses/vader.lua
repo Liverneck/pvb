@@ -3,7 +3,7 @@ BOSS.Num = 1 //Boss ID number. 1,2,3,etc if making a new boss make sure it incre
 BOSS.PName = "Darth Vader" //Boss name
 BOSS.Weapon = "vaderboss"
 BOSS.Music = {
-	vaderboss_music
+	"bossmusic/vaderboss_music.wav"
 }
 //Put music in BOSS.Music for it to play during fight. 'pvb_enablebossmusic' in console controls if its playing (client side)
 
