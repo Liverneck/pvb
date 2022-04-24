@@ -14,6 +14,8 @@ local RifleList = {
 	"tfa_cso_m16a1",
 	"tfa_cso_skull4",
 	"tfa_cso_m1918bar",
+	"tfa_cso_m1garand",
+	"tfa_cso_famas",
 }
 
 local PistolList = {
@@ -21,6 +23,8 @@ local PistolList = {
 	"tfa_cso_dualinfinity",
 	"tfa_cso_mauser_c96",
 	"tfa_cso_p228_v2",
+	"tfa_cso_balrog1",
+	"tfa_cso_divinelock",
 }
 
 local SMGList = {
@@ -28,6 +32,8 @@ local SMGList = {
 	"tfa_cso_tmpdragon",
 	"tfa_cso_skull3_a",
 	"tfa_cso_tempest",
+	"tfa_cso_mp40",
+	"tfa_cso_thompson_master",
 }
 
 local ShotgunList = {
@@ -35,18 +41,25 @@ local ShotgunList = {
 	"tfa_cso_dbarrel",
 	"tfa_cso_m1887xmas",
 	"tfa_cso_usas12",
+	"tfa_cso_xm1014",
+	"tfa_cso_batista",
 }
 
 local SniperList = {
 	"tfa_cso_scout",
+	"tfa_cso_skull5",
+	"tfa_cso_wa2000",
+	"tfa_cso_m24",
+	"tfa_cso_mosin",
+	"tfa_cso_savery",
 }
 
 local SpecialList = {
 	"tfa_cso_elvenranger",
-	"tfa_cso_milkorm32",
 	"tfa_cso_m60",
 	"tfa_cso_m60craft",
 	"tfa_cso_crossbow",
+	"tfa_cso_m2",
 }
 
 resource.AddFile("models/w_winchester_1873.mdl")
