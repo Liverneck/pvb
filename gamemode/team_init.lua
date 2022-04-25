@@ -4,8 +4,8 @@ GM.CreateTeams = function()
 	team.SetUp(TEAM_BOSS, "Boss", Color(255,0,0,255))
 	team.SetUp(TEAM_PLAYERS, "Players", Color(0,255,255,255))
 
-	team.SetSpawnPoint(TEAM_PLAYERS, { "info_player_counterterrorist", "info_player_blue" })
-	team.SetSpawnPoint(TEAM_BOSS, { "info_player_terrorist", "info_player_red" })
+	team.SetSpawnPoint(TEAM_PLAYERS, { "info_player_counterterrorist", "info_player_blue", "info_player_start" })
+	team.SetSpawnPoint(TEAM_BOSS, { "info_player_terrorist", "info_player_red", "pvb_bossspawn" })
 	team.SetSpawnPoint(TEAM_SPECTATOR, "worldspawn")
 end
 
