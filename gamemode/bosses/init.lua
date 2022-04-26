@@ -1,13 +1,15 @@
 PVB.BossList = {}
 local P = 0
 
+Meta_BOSS = {}
+Meta_BOSS.__index = Meta_BOSS
+
 function PVB.RegisterBossClass(tbl)
 	P = P + 1
-	PVB.BossList[P] = {}
-	PVB.BossList[P].Init = tbl.Init
-	PVB.BossList[P].Loadout = tbl.Loadout
-	PVB.BossList[P].OnSpawn = tbl.OnSpawn
-	PVB.BossList[P].Music = tbl.Music
+
+	PVB.BossList[P] = tbl
+
+	setmetatable(tbl, Meta_BOSS)
 end
 
 local BossFiles,_ = file.Find("pvb/gamemode/bosses/*", "LUA")

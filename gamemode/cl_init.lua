@@ -1,3 +1,6 @@
+include("cl_fonts.lua")
+include("cl_hud.lua")
+
 include("shared.lua")
 
 local function FixWeapons()
@@ -9,85 +12,73 @@ function GM:Initialize()
 	FixWeaponsShared()
 end
 
-local fadetime = CreateClientConVar("adn_fadetime", "0.75", true, false, "")
+local highlightedPlayers = {}
+local NextTick = 0
+function GM:Think()
+	local time = CurTime()
 
-surface.CreateFont("ArcticDamageNum", {
-	font = "Bahnschrift", --  Use the font-name which is shown to you by your operating system Font Viewer, not the file name
-	extended = false,
-	size = ScreenScale(8),
-	weight = 1000,
-	antialias = true,
-})
+	if NextTick <= time then
+		NextTick = time + 0.1
 
-surface.CreateFont("ArcticDamageNum_Shadow", {
-	font = "Bahnschrift", --  Use the font-name which is shown to you by your operating system Font Viewer, not the file name
-	extended = false,
-	size = ScreenScale(8),
-	blursize = 4,
-	weight = 1000,
-	antialias = true,
-})
+		local players = team.GetPlayers(TEAM_PLAYERS)
+		local tab = {}
 
-ArcticDamageNumbers = {
-	-- {
-	--	 pos = Vector(0, 0, 0),
-	--	 life = 1,
-	--	 num = 15,
-	-- }
-}
-
-hook.Add("HUDPaint", "Arctic_DamageNum", function()
-	local nextadm = {}
-
-	for _, i in pairs(ArcticDamageNumbers) do
-
-		cam.Start3D()
-
-		local spos = i.pos:ToScreen()
-		local x = spos.x
-		local y = spos.y
-
-		cam.End3D()
-
-		cam.Start2D()
-
-		surface.SetFont("ArcticDamageNum_Shadow")
-
-		local width = surface.GetTextSize(tostring(i.num))
-
-		surface.SetTextColor(0, 0, 0, 255 * i.life)
-		surface.SetTextPos(x - (width / 2), y)
-		surface.DrawText(tostring(i.num))
-
-		surface.SetFont("ArcticDamageNum")
-
-		surface.SetTextColor(255, 255 - i.num, 255 - i.num, 255 * i.life)
-		surface.SetTextPos(x - (width / 2), y)
-		surface.DrawText(tostring(i.num))
-
-		i.pos = i.pos + Vector(0, 0, RealFrameTime() * 32)
-
-		i.pos = i.pos + (i.vec * RealFrameTime() * 8)
-
-		i.life = i.life - RealFrameTime() * (1 / fadetime:GetFloat())
-
-		if i.life > 0 then
-			table.insert(nextadm, i)
+		for _, ply in ipairs(players) do
+			if ply:Alive() then
+				tab[#tab + 1] = ply
+			end	
 		end
 
-		cam.End2D()
+		if #tab == 1 then
+			table.Add(tab, team.GetPlayers(TEAM_BOSS))
+			highlightedPlayers = tab
+		else
+			highlightedPlayers = {}
+		end		
+	end
+end
+
+function GM:PreDrawHalos()
+	halo.Add(highlightedPlayers, Color(0, 255, 0), 2, 2, 1, true, true)
+end
+
+function GM:CalcView(ply, origin, angles, fov, znear, zfar)
+	if ply.KnockedDown and ply.KnockedDown:IsValid() then
+		local rpos, rang = self:GetRagdollEyes(ply)
+		if rpos then
+			origin = rpos
+			angles = rang
+		end
 	end
 
-	ArcticDamageNumbers = nextadm
+	return self.BaseClass.CalcView(self, ply, origin, angles, fov, znear, zfar)
+end
+
+local fadetime = CreateClientConVar("adn_fadetime", "0.75", true, false, "")
+
+ArcticDamageNumbers = {}
+
+function GM:OnEntityCreated(ent)
+	if IsValid(ent) and ent:IsPlayer() then
+		ent.DamageTaken = 0
+	end
+end
+
+net.Receive("PVB.RoundStarted", function(len)
+	BossHPMem = PVB.TRANSMITTER:GetBossMaxHealth()
+	PlyHealthMem = LocalPlayer():Health()
+
+	for _, ply in ipairs(player.GetAll()) do
+		ply.DealtDamage = 0
+		ply.DamageTaken = 0
+	end
 end)
 
-net.Receive("arctic_damagenum", function(len, ply)
+net.Receive("SendDamages", function(len, ply)
 	local pos = net.ReadVector()
 	local dmg = net.ReadFloat()
 
 	if fadetime:GetFloat() <= 0 then return end
-
-	pos = pos
 
 	dmg = math.Round(dmg, 1)
 
@@ -97,4 +88,18 @@ net.Receive("arctic_damagenum", function(len, ply)
 		num = dmg,
 		vec = VectorRand()
 	})
+end)
+
+net.Receive("SendBossDamages", function(len, ply)
+	local dmg = net.ReadInt(16)
+	local ent = net.ReadEntity()
+
+	if dmg < 0 then
+		ent.DamageTaken = 0
+		return
+	end
+
+	if ent == PVB.TRANSMITTER:GetBossPlayer() then
+		ent.DamageTaken = ent.DamageTaken + math.Round(dmg)
+	end
 end)

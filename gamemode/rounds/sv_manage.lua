@@ -1,9 +1,9 @@
-//custom state enums
+-- custom state enums
 PVB_WAITING = 0
 PVB_PREP = 1
 PVB_ACTIVE = 2
 PVB_SWITCH = 3
-//end custom state enums
+-- end custom state enums
 local player_GetAll = player.GetAll
 local StateName = "PVB.RoundState"
 
@@ -55,6 +55,7 @@ local SniperList = {
 }
 
 local SpecialList = {
+	"tfa_cso_magnumdrill",
 	"tfa_cso_elvenranger",
 	"tfa_cso_m60",
 	"tfa_cso_m60craft",
@@ -75,7 +76,7 @@ hook.Add("InitPostEntity", "PVB.Rounds.SpawnLogicEnt", function()
 		end
 	end
 	local newT = ents.Create("info_pvb_logic")
-	newT:Spawn()	//I got better!
+	newT:Spawn()	-- I got better!
 end)
 
 function PVB:WaitForPlayers()
@@ -122,6 +123,7 @@ function PVB:StartRound()
 			v:AddEFlags(EFL_NO_DAMAGE_FORCES)
 			v:Spawn()
 			PVB.TRANSMITTER:SetBossMaxHealth(PVB.TRANSMITTER:GetBossMaxHealth() + v:Health())
+			PVB.TRANSMITTER:SetBossPlayer(v)
 			print("[PVB]" .. v:Nick() .. " <" .. v:SteamID() .. "> " .. " Has been selected as the boss")
 			PrintMessage(HUD_PRINTTALK, "[PVB] " .. v:Nick() .. " Has been selected as the boss")
 		end
@@ -133,6 +135,8 @@ function PVB:StartRound()
 
 		v:SetMaxHealth(v:Health())
 		v:SetModel(v.BossPlayerModel or v.PlayerModel or "models/player/riot.mdl")
+
+		v:SetupHands()
 		
 		if v:Team() == TEAM_PLAYERS then
 			v:Give("weapon_fists")
@@ -153,9 +157,9 @@ function PVB:EndRound(winner)
 	hook.Run("PVB.RoundFinished", winner)
 	game.SetGlobalCounter(StateName, PVB_SWITCH)
 
-	for k,v in pairs(player.GetAll()) do
-		v.DealtDamage = v.DealtDamage or 0
-		v:SetNWInt("QueuePoints", v:GetNWInt("QueuePoints", 0) + 10 + math.floor(v.DealtDamage / 500))
+	for _, ply in ipairs(team.GetPlayers(TEAM_PLAYERS)) do
+		ply.DealtDamage = ply.DealtDamage or 0
+		ply:SetNWInt("QueuePoints", ply:GetNWInt("QueuePoints", 0) + 10 + math.floor(ply.DealtDamage / 750))
 	end
 	
 	timer.Create("StartNextRound", 5, 1, function()
@@ -168,6 +172,9 @@ end
 util.AddNetworkString("RequestWeaponConVar")
 util.AddNetworkString("GrantedWeaponConVar")
 
+local bannedAmmo = {
+	["SMG1_Grenade"] = true
+}
 function GM:PlayerLoadout(ply)
 	if ply:Team() == TEAM_PLAYERS then
 		ply:Give(table.Random(PistolList))
@@ -176,17 +183,19 @@ function GM:PlayerLoadout(ply)
 		ply:Give(table.Random(ShotgunList))
 		ply:Give(table.Random(SniperList))
 	end
+
 	if ply:Team() == TEAM_BOSS then
 		PVB.RoundBoss:Loadout(ply)
+		return
 	end
 	
-	ply:GiveAmmo(999999,"Pistol")
-	ply:GiveAmmo(999999,"AR2")
-	ply:GiveAmmo(999999,"SMG1")
-	ply:GiveAmmo(999999,"357")
-	ply:GiveAmmo(999999,"XBowBolt")
-	ply:GiveAmmo(1,"SMG1_Grenade")
-	ply:GiveAmmo(999999,"Buckshot")
+	for _, ammo in ipairs(game.GetAmmoTypes()) do
+		if not bannedAmmo[ammo] then
+			ply:GiveAmmo(999999, ammo)
+		end
+	end
+
+	ply:GiveAmmo(1, "SMG1_Grenade")
 end
 
 net.Receive("GrantedWeaponConVar", function (len, ply)
@@ -262,8 +271,8 @@ hook.Add("PlayerDeath", "PVB.Rounds.OnDeded", function(ded, inflict, atck)
 end)
 
 function GM:PlayerShouldTakeDamage( ply, attacker )
-		if(attacker:IsPlayer()) then
-		if(team.GetName(ply:Team()) == team.GetName(attacker:Team())) then
+		if attacker:IsPlayer() then
+		if team.GetName(ply:Team()) == team.GetName(attacker:Team()) then
 			return false
 		end
 		return true
@@ -271,21 +280,22 @@ function GM:PlayerShouldTakeDamage( ply, attacker )
 	return true
 end
 
-happened = false
+local alive = 0
+local happened = false
 timer.Create( "CheckForPlayers",5, 0,  function()
-	if(happened == true) then
+	if happened == true then
 		timer.Stop("CheckForPlayers")
 	end
 
 
-	if(#player.GetAll() >= 2 and happened == false) then
+	if #player.GetAll() >= 2 and happened == false then
 		alive = 0
 		for k,v in pairs(player.GetAll()) do
-			if(v:Alive()) then
+			if v:Alive() then
 				alive = alive + 1
 			end
 		end
-		if(alive <= 1) then 
+		if alive <= 1 then 
 			if game.GetGlobalCounter(StateName) == PVB_SWITCH then return end
 			PVB:BeginPrep()
 			happened = true
@@ -294,4 +304,3 @@ timer.Create( "CheckForPlayers",5, 0,  function()
 	end
 
 end)
-

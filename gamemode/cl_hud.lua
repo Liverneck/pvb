@@ -21,15 +21,55 @@ local function GetBossHealth()
 	return num
 end
 
-net.Receive("PVB.RoundStarted", function(len)
-	BossHPMem = PVB.TRANSMITTER:GetBossMaxHealth()
-	PlyHealthMem = LocalPlayer():Health()
-end)
-
 local BossHPMem = 0
 local Plus = maxx / 2 + maxx / 6
 local Minus = maxx / 2 - maxx / 6
 local ScrOver6 = maxx / 6
+
+local function DrawDamageNumbers()
+	local nextadm = {}
+
+	for _, i in pairs(ArcticDamageNumbers) do
+
+		cam.Start3D()
+
+		local spos = i.pos:ToScreen()
+		local x = spos.x
+		local y = spos.y
+
+		cam.End3D()
+
+		cam.Start2D()
+
+		surface.SetFont("ArcticDamageNum_Shadow")
+
+		local width = surface.GetTextSize(tostring(i.num))
+
+		surface.SetTextColor(0, 0, 0, 255 * i.life)
+		surface.SetTextPos(x - (width / 2), y)
+		surface.DrawText(tostring(i.num))
+
+		surface.SetFont("ArcticDamageNum")
+
+		surface.SetTextColor(255, 255 - i.num, 255 - i.num, 255 * i.life)
+		surface.SetTextPos(x - (width / 2), y)
+		surface.DrawText(tostring(i.num))
+
+		i.pos = i.pos + Vector(0, 0, RealFrameTime() * 32)
+
+		i.pos = i.pos + (i.vec * RealFrameTime() * 8)
+
+		i.life = i.life - RealFrameTime() * (1 / GetConVar("adn_fadetime"):GetFloat())
+
+		if i.life > 0 then
+			table.insert(nextadm, i)
+		end
+
+		cam.End2D()
+	end
+
+	ArcticDamageNumbers = nextadm
+end
 
 local function DrawBossHealth()
 	BossHPMem = Lerp(FrameTime() * 9, BossHPMem, GetBossHealth())
@@ -71,7 +111,7 @@ end
 ///////////////
 local function DrawBossRage()
 	surface.SetFont("PVBHUDHealth")
-	local str = "Special: " .. tostring(math.Round(GetBossHealth() / PVB.TRANSMITTER:GetBossMaxHealth() * 100), 1) .. "%"
+	local str = "Special: " .. tostring(math.Round(PVB.BossList[PVB.TRANSMITTER:GetBossInt()]:SpecialProgress(PVB.TRANSMITTER:GetBossPlayer()) * 100), 1) .. "%"
 	local sizew, sizeh = surface.GetTextSize(str)
 	surface.SetTextColor(Color(255,255,255))
 	surface.SetTextPos(maxx / 2 - sizew / 2, sizeh + 30)
@@ -171,28 +211,30 @@ local function DrawWeaponName()
 	surface.DrawText(str)
 end
 
-hook.Add("HUDPaint", "PVB.CustomHUD", function()
+function GM:HUDPaint()
 	if PVB.TRANSMITTER:GetRoundActive() then
+		DrawDamageNumbers()
 		DrawBossHealth()
 		DrawBossRage()
 		DrawQueueHud()
 	end
-	if LocalPlayer():Alive() and LocalPlayer():Team() != TEAM_SPECTATOR then
+	if LocalPlayer():Alive() and LocalPlayer():Team() ~= TEAM_SPECTATOR then
 		DrawPlayerHealth()
 		DrawWeaponName()
 	end
-end)
+end
 
 local DontDraw = {
 	CHudHealth = true,
 	CHudAmmo = true,
-	CHudDeathNotice = true
+	CHudDeathNotice = true,
+	CHudDamageIndicator = true,
 }
 
-function GM:HUDShouldDraw( name )
-	return !DontDraw[name]
+function GM:HUDShouldDraw(name)
+	return not DontDraw[name]
 end
 
-function GM:DrawDeathNotice(x,y)
+function GM:DrawDeathNotice(x, y)
 	return false
 end

@@ -97,9 +97,6 @@ hook.Add("InitPostEntity", "PVB.Music.OnJoin", function()
 	end)
 end)
 
-
-
-
 hook.Add("PlayerSay","PVB.MusicToggleCommand", function(  ply, text,  teamChat )
 	if(ply == LocalPlayer()) then
 		if(text == "!music") then

@@ -11,10 +11,6 @@ SWEP.HoldType 			= "melee2"
 SWEP.ShowWorldModel     = false
 SWEP.ShowViewModel     	= false
 
-if SERVER then
-	resource.AddFile("models/sgg/starwars/weapons/w_vader_saber.mdl")
-end
-
 SWEP.VElements = {
 	["longsword"] = { type = "Model", model = "models/sgg/starwars/weapons/w_vader_saber.mdl", bone = "ValveBiped.Bip01_R_Hand", rel = "", pos = Vector(1.557, 1.557, -6.753), angle = Angle(92.337, -64.287, 127.402), size = Vector(0.899, 0.899, 0.899), color = Color(255, 255, 255, 255), surpresslightning = false, material = "", skin = 0, bodygroup = {} }
 }
@@ -64,7 +60,7 @@ function SWEP:Deploy()
 	self:SendWeaponAnim( ACT_VM_DRAW )
 	self:SetWeaponHoldType(self.HoldType)
 end
-	
+
 function SWEP:PrimaryAttack()
 	local owner = self:GetOwner()
 	owner:LagCompensation(true)
@@ -100,7 +96,7 @@ function SWEP:PrimaryAttack()
 			end
 		end)	
 	end
-		
+	
 	timer.Create("Idle", self:SequenceDuration(), 1, function()
 	if not IsValid(self) then 
 		return
@@ -110,7 +106,35 @@ function SWEP:PrimaryAttack()
 end
 
 function SWEP:Reload()
+	if not SERVER then return end
 
+	local owner = self:GetOwner()
+
+	local dist = 128
+	local ang = owner:EyeAngles()
+	local pos = owner:GetPos() + Vector(dist, dist, 0) * (ang + Angle(0, 90, 0)):Right()
+	pos.z = pos.z + 32
+	ang.x = 0
+
+	if owner:CanUseSpecial() then
+		for _, ent in ipairs(ents.FindInSphere(pos, 128)) do
+			if ent:IsPlayer() and ent ~= owner then
+				ent:GiveStatus("knockdown", 5)
+				timer.Simple(0.1, function()
+					if ent:IsValid() then
+						ent:SetVelocity(Vector(750, 750, 750) * owner:GetAimVector())
+					end
+				end)
+			end
+
+			owner.DamageTaken = 0
+			
+			net.Start("SendBossDamages")
+			net.WriteInt(-1, 16)
+			net.WriteEntity(ent)
+			net.Broadcast()
+		end
+	end
 end
 
 function SWEP:SecondaryAttack()

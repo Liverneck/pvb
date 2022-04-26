@@ -10,8 +10,6 @@ PVB = {}
 DeriveGamemode("base")
 DEFINE_BASECLASS("gamemode_base")
 
-GM.ShowTeam = nil
-
 include("sh_util.lua")
 include("team_spectator.lua")
 include("team_players.lua")
@@ -20,10 +18,24 @@ include("team_init.lua")
 include("bosses/init.lua")
 include("music/manifest.lua")
 include("rounds/manifest.lua")
-include("hud/manifest.lua")
 include("vgui/manifest.lua")
 include("loadout/manifest.lua")
 include("tutorial/sh_tutorial.lua")
+
+GM.ShowTeam = nil
+
+function GM:GetRagdollEyes(ply)
+	local Ragdoll = ply:GetRagdollEntity()
+	if not Ragdoll or not Ragdoll:IsValid() then return end
+
+	local att = Ragdoll:GetAttachment(Ragdoll:LookupAttachment("eyes"))
+	if att then
+		att.Pos = att.Pos + att.Ang:Forward() * -2
+		att.Ang = att.Ang
+
+		return att.Pos, att.Ang
+	end
+end
 
 function FixWeaponsShared()
 	for _, wep in ipairs(weapons.GetList()) do

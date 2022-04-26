@@ -1,6 +1,9 @@
-util.AddNetworkString("arctic_damagenum")
+util.AddNetworkString("SendDamages")
+util.AddNetworkString("SendBossDamages")
 
 AddCSLuaFile("cl_init.lua")
+AddCSLuaFile("cl_fonts.lua")
+AddCSLuaFile("cl_hud.lua")
 AddCSLuaFile("shared.lua")
 
 AddCSLuaFile("sh_util.lua")
@@ -12,7 +15,6 @@ AddCSLuaFile("team_init.lua")
 AddCSLuaFile("bosses/init.lua")
 AddCSLuaFile("music/manifest.lua")
 AddCSLuaFile("rounds/manifest.lua")
-AddCSLuaFile("hud/manifest.lua")
 AddCSLuaFile("vgui/manifest.lua")
 AddCSLuaFile("loadout/manifest.lua")
 AddCSLuaFile("tutorial/sh_tutorial.lua")
@@ -23,6 +25,11 @@ include("obj_player_extend_sv.lua")
 
 include("shared.lua")
 
+local player_GetAll = player.GetAll
+local ipairs = ipairs
+local math_Round = math.Round
+local math_abs = math.abs
+
 local function FixWeapons()
 	
 end
@@ -30,6 +37,21 @@ end
 function GM:Initialize()
 	FixWeapons()
 	FixWeaponsShared()
+end
+
+local NextTick = 0
+function GM:Think()
+	local time = CurTime()
+
+	if NextTick <= time then
+		NextTick = time + 1
+
+		for _, ply in ipairs(player_GetAll()) do
+			if ply:IsValid() and ply:Alive() and ply:Health() < ply:GetMaxHealth() and ply.LastDamageTime + 15 < CurTime() then
+				ply:SetHealth(ply:Health() + 1)
+			end
+		end
+	end
 end
 
 function GM:PlayerCanPickupWeapon(ply, wep)
@@ -68,31 +90,44 @@ function GM:PlayerSpawn( ply, transiton )
 	hook.Call("PlayerSetModel", GAMEMODE, ply)
 
 	ply.DealtDamage = 0
+	ply.DamageTaken = 0
 end
 
 function GM:EntityTakeDamage(ent, dmg)
+	ent.LastDamageTime = CurTime()
+	
 	local ply = dmg:GetAttacker()
 
 	if not ply:IsPlayer() then return end
 	if not ent:IsPlayer() then return end
-	if ent:Team() == ply:Team() then return end
+	local entTeam = ent:Team()
+	if entTeam == ply:Team() then return end
 	if ent:Health() == 0 then return end
 	
 	local pos = dmg:GetDamagePosition()
 	local num = dmg:GetDamage()
 
-	if ent:Team() == TEAM_BOSS then
+	
+	
+	if entTeam == TEAM_BOSS then
 		ent:SetVelocity(dmg:GetDamageForce() * 0.05)
-		ply.DealtDamage = ply.DealtDamage + dmg:GetDamage()
+		ply.DealtDamage = ply.DealtDamage + num
+		ent.DamageTaken = ent.DamageTaken + num
+		
+		net.Start("SendBossDamages")
+		net.WriteInt(num, 16)
+		net.WriteEntity(ent)
+		net.Broadcast()
 	end
 	
-	num = math.Round(num, 1)
-
+	num = math_Round(num, 1)
+	if num <= 0 then return end
+	
 	if not pos then
 		pos = ent:GetPos()
 	end
 
-	net.Start("arctic_damagenum")
+	net.Start("SendDamages", true)
 	net.WriteVector(pos)
 	net.WriteFloat(num)
 	net.Send(ply)
@@ -140,7 +175,7 @@ function GM:FinishMove( ply, move )
 		-- this check here to preserve the "authentic" feeling
 		local speedBoostPerc = ( ( not ply:Crouching() ) and 0.5 ) or 0.1
 		
-		local speedAddition = math.abs( move:GetForwardSpeed() * speedBoostPerc )
+		local speedAddition = math_abs( move:GetForwardSpeed() * speedBoostPerc )
 		local maxSpeed = move:GetMaxSpeed() * ( 1 + speedBoostPerc )
 		local newSpeed = speedAddition + move:GetVelocity():Length2D()
 		
