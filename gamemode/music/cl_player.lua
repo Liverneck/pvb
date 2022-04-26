@@ -1,4 +1,3 @@
-local SongCache = SongCache or {}
 local ActiveSong = ActiveSong or nil
 
 //Temp changed boss music to false by default until further notice
@@ -14,73 +13,44 @@ cvars.AddChangeCallback("pvb_enablebossmusic", function(cvar, old, new)
 	end
 end, "PVB.OnMusicToggled")
 
-function PVB:FadeMusic()
-	if !ActiveSong then return end
-	if timer.Exists("PVB.MusicNewTrack") then
-		timer.Remove("PVB.MusicNewTrack")
-	end
-	local End = 0
-	local Vol = 5//stationinfo:GetVolume() //SongCache[ActiveSong]:GetVolume()
-	
-	//HOPEFULLY ADD FADING MUSIC LATER BUT CURRENTLY ITS LOW PRIORIY
-	
-	-- timer.Create("PVB.FadeMusic", 0.1, 10, function()
-		-- Vol = math.Approach(Vol, End, 0.1)
-		-- SongCache[ActiveSong]:SetVolume(Vol)
-	-- end)
-	-- timer.Simple(1, function()
-		-- SongCache[ActiveSong]:SetTime(0)
-		-- SongCache[ActiveSong]:Pause()
-	-- end)
-end
-
-//stationinfo = ""
-
+local ActiveSong = ActiveSong or 1
+local cache = {} or nil
 function PVB:ChangeMusic(Play, BossID)
 	if Play and EnableSongs:GetBool() and BossID != -1 then
 		local SongList = PVB.BossList[BossID].Music
 		ActiveSong = math.random(#SongList)
-		if !SongCache[ActiveSong] then
+		if type(SongList[ActiveSong]) != "IGModAudioChannel" then
 			if string.Left(SongList[ActiveSong], 4) != "http" then
-				sound.PlayFile("sound/"..SongList[ActiveSong], "noblock mono", function(stationinfo)//stationinfo[0], EID, EName)
-					stationinfo:SetVolume( 5 )
-					//stationinfo[0]:EnableLooping(true)
-					SongCache[ActiveSong] = "sound/"..SongList[ActiveSong]
-					timer.Create("PVB.MusicNewTrack", SoundDuration("sound/"..SongList[ActiveSong]), 1, function()
-						stationinfo:SetTime(0)
-						stationinfo:Pause()
-						PVB:ChangeMusic(true, BossID)
-					end)
+				sound.PlayFile("sound/"..SongList[ActiveSong], "noblock mono", function(stationmusic)
+					if IsValid(stationmusic) then
+						cache = SongList[ActiveSong]
+						SongList[ActiveSong] = stationmusic
+						stationmusic:EnableLooping(true)
+						stationmusic:SetVolume( 5 )
+						stationmusic:Play()
+					end
 				end)
 			else
-				sound.PlayURL(SongList[ActiveSong], "noblock mono", function(stationinfo)
-					stationinfo:SetVolume( 5 )
-					//stationinfo[0]:EnableLooping(true)
-					SongCache[ActiveSong] = "sound/"..SongList[ActiveSong]
-					timer.Create("PVB.MusicNewTrack", SoundDuration("sound/"..SongList[ActiveSong]), 1, function()
-						stationinfo[0]:SetTime(0)
-						stationinfo[0]:Pause()
-						PVB:ChangeMusic(true, BossID)
-					end)
+				sound.PlayURL( songurl, "noblock mono", function(station)
+					if IsValid(station) then
+						cache = SongList[ActiveSong]
+						station:EnableLooping(true)
+						station:SetVolume( 5 )
+						station:Play()
+					end
 				end)
 			end
 		else
-			//SongCache[ActiveSong]:SetTime(0)
-			//SongCache[ActiveSong]:Play()
-			//SongCache[ActiveSong]:SetVolume(5)
-			
-			sound.PlayFile("sound/"..SongList[ActiveSong], "noblock mono", function(stationinfo)
-			
-				timer.Create("PVB.MusicNewTrack", SoundDuration("sound/"..SongList[ActiveSong]), 1, function()
-					stationinfo:SetVolume( 5 )
-					stationinfo:SetTime(0)
-					stationinfo:Pause()
-					PVB:ChangeMusic()
-				end)
+			sound.PlayFile("sound/"..cache, "noblock mono", function(stationmusic)
+				if IsValid(stationmusic) then
+					SongList[ActiveSong] = cache
+					cache = stationmusic
+					stationmusic:EnableLooping(true)
+					stationmusic:SetVolume( 5 )
+					stationmusic:Play()
+				end
 			end)
 		end
-	else
-		//PVB:FadeMusic()
 	end
 end
 
@@ -106,11 +76,8 @@ hook.Add("PlayerSay","PVB.MusicToggleCommand", function(  ply, text,  teamChat )
 			end
 			if(EnableSongs:GetInt() == 0) then
 				RunConsoleCommand( "pvb_enablebossmusic 0")
-			
 			end
 			print("Music Toggled")
 		end
 	end
 end)
-
-
