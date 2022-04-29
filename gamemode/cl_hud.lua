@@ -7,6 +7,13 @@ surface.CreateFont("PVBHUDHealth", {
 	shadow = true
 })
 
+surface.CreateFont("PVBHUDTime", {
+	font = "Roboto-Regular",
+	size = 60,
+	weight = 600,
+	shadow = true
+})
+
 local maxx = ScrW()
 local maxy = ScrH()
 
@@ -25,6 +32,31 @@ local BossHPMem = 0
 local Plus = maxx / 2 + maxx / 6
 local Minus = maxx / 2 - maxx / 6
 local ScrOver6 = maxx / 6
+
+function util.ToMinutesSeconds(seconds)
+	local minutes = math.floor(seconds / 60)
+	seconds = seconds - minutes * 60
+
+	return string.format("%02d:%02d", minutes, math.floor(seconds))
+end
+
+-- More appropriate for count downs. Timer will display 00:01 if less than a second remains and never display 00:00.
+function util.ToMinutesSecondsCD(seconds)
+	seconds = math.ceil(seconds)
+	local minutes = math.floor(seconds / 60)
+	seconds = seconds - minutes * 60
+
+	return string.format("%02d:%02d", minutes, seconds)
+end
+
+function util.ToMinutesSecondsMilliseconds(seconds)
+	local minutes = math.floor(seconds / 60)
+	seconds = seconds - minutes * 60
+
+	local milliseconds = math.floor(seconds % 1 * 100)
+
+	return string.format("%02d:%02d.%02d", minutes, math.floor(seconds), milliseconds)
+end
 
 local function DrawDamageNumbers()
 	local nextadm = {}
@@ -169,6 +201,26 @@ end
 //END PLAYER HEALTH//
 /////////////////////
 
+
+
+/////////////////////
+/////Round Timer/////
+/////////////////////
+local time = 180
+local roundtime = util.ToMinutesSecondsCD(time)
+local function DrawRoundTimer()
+	surface.SetDrawColor(85,85,85,231)
+	surface.DrawOutlinedRect(10, 10, 150, 75, 2)
+	surface.SetDrawColor(0,0,0,65)
+	surface.DrawRect(10, 10, 150, 75)
+	surface.SetTextColor(Color(225,225,225,255))
+	surface.SetTextPos(20, 15, 150)
+	surface.SetFont("PVBHUDTime")
+	surface.DrawText(roundtime)
+end
+
+
+
 /////////////////////
 //Queue Player Hud///
 /////////////////////
@@ -217,6 +269,7 @@ function GM:HUDPaint()
 		DrawBossHealth()
 		DrawBossRage()
 		DrawQueueHud()
+		DrawRoundTimer()
 	end
 	if LocalPlayer():Alive() and LocalPlayer():Team() ~= TEAM_SPECTATOR then
 		DrawPlayerHealth()
