@@ -7,6 +7,13 @@ surface.CreateFont("PVBHUDHealth", {
 	shadow = true
 })
 
+surface.CreateFont("PVBHUDSmall", {
+	font = "Roboto-Regular",
+	size = 20,
+	weight = 600,
+	shadow = true
+})
+
 surface.CreateFont("PVBHUDTime", {
 	font = "Roboto-Regular",
 	size = 60,
@@ -263,6 +270,42 @@ local function DrawWeaponName()
 	surface.DrawText(str)
 end
 
+local function DrawWeaponAmmo()
+
+	local wep = LocalPlayer():GetActiveWeapon()
+
+	if not wep.Primary then return end
+	if wep.Primary.ClipSize == -1 then return end
+
+	local str = wep:Clip1()
+
+	local textcolor = Color(255,255,255)
+
+	if str / wep.Primary.ClipSize <= 0.35 then
+		textcolor = Color(255,255,115)
+	end
+
+	if str == 0 then
+		textcolor = Color(255,0,0)
+	end
+
+	surface.SetFont("PVBHUDTime")
+	local text1W, text1H = surface.GetTextSize(wep.Primary.ClipSize)
+
+	surface.SetTextColor(textcolor)
+	surface.SetTextPos(ScrW() - 100, maxy-120)
+	surface.DrawText(str)
+
+	local str = "/ " .. wep.Primary.ClipSize
+
+	surface.SetFont("PVBHUDSmall")
+	local text2W, text2H = surface.GetTextSize(str)
+
+	surface.SetTextColor(textcolor)
+	surface.SetTextPos(ScrW() - 100, (maxy) - text1H)
+	surface.DrawText(str)
+end
+
 function GM:HUDPaint()
 	if PVB.TRANSMITTER:GetRoundActive() then
 		DrawDamageNumbers()
@@ -274,6 +317,7 @@ function GM:HUDPaint()
 	if LocalPlayer():Alive() and LocalPlayer():Team() ~= TEAM_SPECTATOR then
 		DrawPlayerHealth()
 		DrawWeaponName()
+		DrawWeaponAmmo()
 	end
 end
 

@@ -1,11 +1,19 @@
 local BOSS = {}
 
 BOSS.PrintName = "Darth Vader" -- Boss name
-BOSS.Weapon = "vaderboss"
+
+BOSS.Weapons = {
+	"vaderboss"
+}
+
 BOSS.Model = "models/player/darth_vader.mdl"
 BOSS.Music = {
 	"bossmusic/vaderboss_music.wav"
 }
+
+BOSS.Health = 1500
+BOSS.HealthAdd = 1000
+BOSS.SpecialHealthPerc = 0.9
 
 -- Put music in BOSS.Music for it to play during fight. 'pvb_enablebossmusic' in console controls if its playing (client side)
 
@@ -20,7 +28,7 @@ end
 
 local requiredDamageFunc = function(ply)
 	local enemies = #team.GetPlayers(TEAM_PLAYERS) -- Number of "players"
-	return  enemies * 0.9 * 1500 + 1000
+	return  enemies * BOSS.SpecialHealthPerc * BOSS.Health + BOSS.HealthAdd
 end
 
 function BOSS:CanUseSpecial(ply)
@@ -38,9 +46,12 @@ end
 -- Include weapons/ammo/armor/etc in BOSS:Loadout
 function BOSS:Loadout(ply)
 	local enemies = #team.GetPlayers(TEAM_PLAYERS) -- Number of "players"
-	local health = ((1500 * enemies) ^ 1.0341) + 1000 -- Health multiplier so health scales depending on player count
+	local health = ((self.Health * enemies) ^ 1.0341) + self.HealthAdd -- Health multiplier so health scales depending on player count
 	ply:SetHealth(health)
-	ply:Give(self.Weapon)
+	
+	for _, weapon in ipairs(self.Weapons) do
+		ply:Give(weapon)
+	end
 end
 
 PVB.RegisterBossClass(BOSS)
