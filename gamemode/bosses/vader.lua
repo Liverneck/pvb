@@ -20,7 +20,7 @@ end
 
 local requiredDamageFunc = function(ply)
 	local enemies = #team.GetPlayers(TEAM_PLAYERS) -- Number of "players"
-	return  enemies * 0.9 * 3000 + 500
+	return  enemies * 0.9 * 1500 + 1000
 end
 
 function BOSS:CanUseSpecial(ply)
@@ -38,7 +38,7 @@ end
 -- Include weapons/ammo/armor/etc in BOSS:Loadout
 function BOSS:Loadout(ply)
 	local enemies = #team.GetPlayers(TEAM_PLAYERS) -- Number of "players"
-	local health = ((3000 * enemies) ^ 1.0341) + 1000 -- Health multiplier so health scales depending on player count
+	local health = ((1500 * enemies) ^ 1.0341) + 1000 -- Health multiplier so health scales depending on player count
 	ply:SetHealth(health)
 	ply:Give(self.Weapon)
 end

@@ -56,7 +56,7 @@ local SniperList = {
 
 local SpecialList = {
 	"tfa_cso_magnumdrill",
-	"tfa_cso_elvenranger",
+	--"tfa_cso_elvenranger",
 	"tfa_cso_m60",
 	"tfa_cso_m60craft",
 	"tfa_cso_crossbow",
@@ -266,13 +266,14 @@ hook.Add("PlayerDeath", "PVB.Rounds.OnDeded", function(ded, inflict, atck)
 		elseif GAMEMODE:AlivePlayers() == 0 then
 			PVB:EndRound(false)
 		end
-		ded:Spectate(OBS_MODE_ROAMING)
+		ded:Spectate(OBS_MODE_CHASE)
+		ded:SpectateEntity(atck)
 	end)
 end)
 
 function GM:PlayerShouldTakeDamage( ply, attacker )
 		if attacker:IsPlayer() then
-		if team.GetName(ply:Team()) == team.GetName(attacker:Team()) then
+		if ply:Team() == attacker:Team() then
 			return false
 		end
 		return true
@@ -282,13 +283,13 @@ end
 
 local alive = 0
 local happened = false
-timer.Create( "CheckForPlayers",5, 0,  function()
+timer.Create( "CheckForPlayers", 5, 0,  function()
 	if happened == true then
 		timer.Stop("CheckForPlayers")
 	end
 
 
-	if #player.GetAll() >= 2 and happened == false then
+	if player.GetCount() >= 2 and happened == false then
 		alive = 0
 		for k,v in pairs(player.GetAll()) do
 			if v:Alive() then

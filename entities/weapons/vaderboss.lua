@@ -45,9 +45,12 @@ SWEP.SlotPos			= 1
 SWEP.DrawAmmo			= false
 SWEP.DrawCrosshair		= true
 
+AccessorFunc(SWEP, "m_NextTime", "NextReload", FORCE_NUMBER)
+
 function SWEP:Initialize()
+	self:SetNextReload(0)
+
 	self:SetWeaponHoldType(self.HoldType)
-	
 end
 
 function SWEP:PlayWeaponSound( snd )
@@ -106,37 +109,80 @@ function SWEP:PrimaryAttack()
 end
 
 function SWEP:Reload()
+	if not self:CanReload() then return end
+	self:SetNextReload(CurTime() + 1)
+
 	if not SERVER then return end
 
 	local owner = self:GetOwner()
 
 	local dist = 128
-	local ang = owner:EyeAngles()
-	local pos = owner:GetPos() + Vector(dist, dist, 0) * (ang + Angle(0, 90, 0)):Right()
+	local pos = owner:GetPos() + Vector(dist, dist, 0) * (owner:EyeAngles() + Angle(0, 90, 0)):Right()
 	pos.z = pos.z + 32
-	ang.x = 0
 
 	if owner:CanUseSpecial() then
+		local plyNum = 0
+		
 		for _, ent in ipairs(ents.FindInSphere(pos, 128)) do
-			if ent:IsPlayer() and ent ~= owner then
+			if ent:IsPlayer() and ent:Alive() and ent ~= owner then
+				plyNum = plyNum + 1
 				ent:GiveStatus("knockdown", 5)
 				timer.Simple(0.1, function()
 					if ent:IsValid() then
-						ent:SetVelocity(Vector(750, 750, 750) * owner:GetAimVector())
+						ent:SetVelocity(Vector(500, 500, 0) * owner:GetAimVector() + Vector(0, 0, 500))
 					end
 				end)
 			end
-
+		end
+		
+		if plyNum > 0 then
 			owner.DamageTaken = 0
-			
+
 			net.Start("SendBossDamages")
 			net.WriteInt(-1, 16)
-			net.WriteEntity(ent)
+			net.WriteEntity(owner)
 			net.Broadcast()
 		end
 	end
 end
 
+function SWEP:CanReload()
+	if self:GetNextReload() <= CurTime() then
+		return true
+	end
+
+	return false
+end
+
 function SWEP:SecondaryAttack()
 
 end
+
+local matWhite = Material("models/debug/debugwhite")
+hook.Add("PostDrawOpaqueRenderables", "DrawTheThingy", function()
+	local ply = LocalPlayer()
+	if ply:Team() ~= TEAM_BOSS or not ply:Alive() or not ply:CanUseSpecial() then return end
+
+	local dist = 128
+	local pos = ply:GetPos() + Vector(dist, dist, 0) * (ply:EyeAngles() + Angle(0, 90, 0)):Right()
+	pos.z = pos.z + 32
+
+	for _, ent in ipairs(ents.FindInSphere(pos, 128)) do
+		if ent:IsPlayer() and ent:Alive() and ent ~= ply then
+
+			render.SetBlend(1)
+			render.ModelMaterialOverride(matWhite)
+			render.SetColorModulation(1, 1, 0)
+			render.SuppressEngineLighting(true)
+			cam.IgnoreZ(true)
+
+			ent:DrawModel()
+
+			render.SetBlend(1)
+			render.ModelMaterialOverride()
+			render.SetColorModulation(1, 1, 1)
+			render.SuppressEngineLighting(false)
+			cam.IgnoreZ(false)
+		end
+	end
+end)

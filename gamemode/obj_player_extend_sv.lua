@@ -1,10 +1,5 @@
 local meta = FindMetaTable("Player")
 
-function meta:CanUseSpecial()
-	if self:Team() ~= TEAM_BOSS then return end
-	return PVB.BossList[PVB.TRANSMITTER:GetBossInt()]:CanUseSpecial(self)
-end
-
 function meta:RemoveAllStatus(bSilent, bInstant)
 	if bInstant then
 		for _, ent in ipairs( self:GetChildren() ) do

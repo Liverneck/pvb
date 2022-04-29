@@ -3,7 +3,7 @@ DEFINE_BASECLASS( "player_default" )
 local PLAYER = {}
 
 PLAYER.DisplayName			= "Player"
-PLAYER.WalkSpeed 			= 260
+PLAYER.WalkSpeed 			= 300
 PLAYER.RunSpeed				= 300
 PLAYER.CrouchedWalkSpeed 	= 0.4
 PLAYER.DuckSpeed			= 0.3

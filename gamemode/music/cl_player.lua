@@ -1,7 +1,7 @@
 local ActiveSong = ActiveSong or nil
 
 //Temp changed boss music to false by default until further notice
-local EnableSongs = CreateClientConVar("pvb_enablebossmusic", 0, true, false, "Set to 0 to disable music, 1 to enable music. Clientside only.")
+local EnableSongs = CreateClientConVar("pvb_enablebossmusic", 1, true, false, "Set to 0 to disable music, 1 to enable music. Clientside only.")
 
 cvars.AddChangeCallback("pvb_enablebossmusic", function(cvar, old, new)
 	local BossInt = PVB.TRANSMITTER:GetBossInt()
@@ -21,7 +21,7 @@ function PVB:ChangeMusic(Play, BossID)
 		ActiveSong = math.random(#SongList)
 		if type(SongList[ActiveSong]) != "IGModAudioChannel" then
 			if string.Left(SongList[ActiveSong], 4) != "http" then
-				sound.PlayFile("sound/"..SongList[ActiveSong], "noblock mono", function(stationmusic)
+				sound.PlayFile("sound/" .. SongList[ActiveSong], "noblock mono", function(stationmusic)
 					if IsValid(stationmusic) then
 						cache = SongList[ActiveSong]
 						SongList[ActiveSong] = stationmusic
@@ -41,7 +41,7 @@ function PVB:ChangeMusic(Play, BossID)
 				end)
 			end
 		else
-			sound.PlayFile("sound/"..cache, "noblock mono", function(stationmusic)
+			sound.PlayFile("sound/" .. cache, "noblock mono", function(stationmusic)
 				if IsValid(stationmusic) then
 					SongList[ActiveSong] = cache
 					cache = stationmusic

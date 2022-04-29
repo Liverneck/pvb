@@ -11,6 +11,7 @@ DeriveGamemode("base")
 DEFINE_BASECLASS("gamemode_base")
 
 include("sh_util.lua")
+include("obj_player_extend.lua")
 include("team_spectator.lua")
 include("team_players.lua")
 include("team_boss.lua")

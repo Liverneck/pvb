@@ -6,6 +6,8 @@ AddCSLuaFile("cl_fonts.lua")
 AddCSLuaFile("cl_hud.lua")
 AddCSLuaFile("shared.lua")
 
+AddCSLuaFile("obj_player_extend.lua")
+
 AddCSLuaFile("sh_util.lua")
 AddCSLuaFile("team_spectator.lua")
 AddCSLuaFile("team_players.lua")
@@ -39,6 +41,16 @@ function GM:Initialize()
 	FixWeaponsShared()
 end
 
+function GM:PostPlayerDeath(ply)
+	if ply:Team() == TEAM_BOSS then
+		timer.Simple(1, function()
+			for _, pl in ipairs(player_GetAll()) do
+				pl:Extinguish()
+			end
+		end)
+	end
+end
+
 local NextTick = 0
 function GM:Think()
 	local time = CurTime()
@@ -46,7 +58,7 @@ function GM:Think()
 	if NextTick <= time then
 		NextTick = time + 1
 
-		for _, ply in ipairs(player_GetAll()) do
+		for _, ply in ipairs(team.GetPlayers(TEAM_PLAYERS)) do
 			if ply:IsValid() and ply:Alive() and ply:Health() < ply:GetMaxHealth() and ply.LastDamageTime + 15 < CurTime() then
 				ply:SetHealth(ply:Health() + 1)
 			end
@@ -106,11 +118,9 @@ function GM:EntityTakeDamage(ent, dmg)
 	
 	local pos = dmg:GetDamagePosition()
 	local num = dmg:GetDamage()
-
-	
 	
 	if entTeam == TEAM_BOSS then
-		ent:SetVelocity(dmg:GetDamageForce() * 0.05)
+		ent:SetVelocity(dmg:GetDamageForce() * 0.01)
 		ply.DealtDamage = ply.DealtDamage + num
 		ent.DamageTaken = ent.DamageTaken + num
 		
