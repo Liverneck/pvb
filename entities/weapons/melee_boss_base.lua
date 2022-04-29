@@ -93,6 +93,7 @@ function SWEP:BasicMeleeTrace()
 		bullet.Tracer = 0
 		bullet.Force  = self.MeleeForce
 		bullet.Damage = self.Primary.Damage
+        bullet.Callback = self.HitCallback
 		owner:FireBullets(bullet)
 		self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
 		owner:SetAnimation(PLAYER_ATTACK1)
@@ -106,6 +107,9 @@ function SWEP:BasicMeleeTrace()
 			end
 		end)	
 	end
+end
+
+function SWEP.HitCallback(attacker, tr, dmginfo)
 end
 
 function SWEP:EmitHitSound()
