@@ -1,0 +1,8 @@
+"UnlitGeneric"
+{
+	"$baseTexture" "models/LordOfWolvesBody_Diffuse"
+	"$model" "1"
+	$nocull 1
+	$additive 1
+	//$selfillum 1
+}

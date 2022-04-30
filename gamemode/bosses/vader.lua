@@ -24,6 +24,7 @@ function BOSS:Init()
 	ply:SetNWInt("QueuePoints", 0)
 	ply:SetTeam(TEAM_BOSS)
 	ply.BossPlayerModel = self.Model --Boss's Model
+	
 end
 
 local requiredDamageFunc = function(ply)

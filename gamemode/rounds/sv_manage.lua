@@ -97,6 +97,8 @@ function PVB:BeginPrep()
 	game.CleanUpMap(false, {"info_pvb_logic"})
 	game.SetGlobalCounter(StateName, PVB_PREP)
 	for k,v in pairs(player_GetAll()) do
+		v:SetModelScale(1,.000001)
+		v:SetViewOffset(Vector(0, 0, 64))
 		v:SetTeam(TEAM_PLAYERS)
 		v.BossPlayerModel = nil
 		if v:Alive() then
@@ -125,7 +127,7 @@ function PVB:StartRound()
 			PVB.TRANSMITTER:SetBossMaxHealth(PVB.TRANSMITTER:GetBossMaxHealth() + v:Health())
 			PVB.TRANSMITTER:SetBossPlayer(v)
 			print("[PVB]" .. v:Nick() .. " <" .. v:SteamID() .. "> " .. " Has been selected as the boss")
-			PrintMessage(HUD_PRINTTALK, "[PVB] " .. v:Nick() .. " Has been selected as the boss")
+			PrintMessage(HUD_PRINTTALK, "[PVB] " .. v:Nick() .. " Has been selected as the boss")	
 		end
 		
 		if v:Team() == TEAM_PLAYERS then

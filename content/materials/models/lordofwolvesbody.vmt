@@ -1,0 +1,18 @@
+"VertexLitGeneric"
+{
+	"$baseTexture" "models/LordOfWolvesBody_Diffuse"
+	"$bumpmap" "models/LordOfWolvesBody_Normal"
+	"$phongexponenttexture" "models/LordOfWolvesBody_E"
+	"$normalmapalphaenvmapmask" "1"
+	"$phong" 					"1"
+	"$phongboost"				"40"
+	"$phongalbedotint" "1"
+	"$phongfresnelranges" 		"[0 2 1]"
+	//"$phongtint" "[0.7 0.5 0.7]"
+	"$envmap" "env_cubemap"
+	"$envmaptint" "[0.015 .015 .015]"
+	"$envmapfresnel"			"1"
+	"$model" "1"
+	$nocull 1
+	//$selfillum 1
+}
